@@ -335,3 +335,14 @@ async function saveSurveyToFirebase(){
   }
 
 }
+window.setTab = setTab;
+window.startProfile = startProfile;
+window.submitProfile = submitProfile;
+window.prevQ = prevQ;
+window.pick = pick;
+window.openFood = openFood;
+window.backToList = backToList;
+window.setFoodStage = setFoodStage;
+window.simulate = simulate;
+
+render();
