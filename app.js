@@ -307,8 +307,6 @@ function renderResult(){
   html += `<button class="btn btn-primary" onclick="state.selectedFood=null;setTab('foods')">내 단계에 맞는 손질 안내 보기</button>`;
   app.innerHTML = html;
 }
-
-render();
 async function saveSurveyToFirebase(){
 
   try{
@@ -344,5 +342,7 @@ window.openFood = openFood;
 window.backToList = backToList;
 window.setFoodStage = setFoodStage;
 window.simulate = simulate;
+window.state = state;
+
 
 render();
