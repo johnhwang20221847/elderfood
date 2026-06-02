@@ -266,7 +266,8 @@ function pick(id,score){
 
     render();
 
-  }else{
+  }
+  else{
 
     state.total = totalScore(state.answers);
 
