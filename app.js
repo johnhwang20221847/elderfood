@@ -1,4 +1,5 @@
 const KEY = "caq_total_v1";
+const PKEY = "caq_profile_v1";
 const state = {
   tab: "home",
   total: load(),
@@ -9,10 +10,14 @@ const state = {
   cam: "idle",
   recog: null,
   conf: 0,
+  assessMode: "intro",
+  profile: loadProfile(),
 };
 
 function load(){ const v = localStorage.getItem(KEY); return v==null?null:parseInt(v,10); }
 function save(t){ localStorage.setItem(KEY, String(t)); }
+function loadProfile(){ try{ return JSON.parse(localStorage.getItem(PKEY)) || {}; }catch(e){ return {}; } }
+function saveProfile(p){ localStorage.setItem(PKEY, JSON.stringify(p)); }
 function curStage(){ return state.total==null ? null : stageFor(state.total); }
 
 const app = document.getElementById("app");
@@ -20,6 +25,7 @@ const stageBadge = document.getElementById("stageBadge");
 
 function setTab(t){
   state.tab = t;
+  if(t==="assess") state.assessMode = "intro";
   document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active", b.dataset.tab===t));
   render();
 }
@@ -30,7 +36,7 @@ function render(){
   stageBadge.textContent = s ? STAGE_INFO[s].title.split(" · ")[0] : "평가 전";
   if(state.tab==="home") renderHome();
   else if(state.tab==="camera") renderCamera();
-  else if(state.tab==="foods") state.selectedFood ? renderFoodDetail() : renderFoodList();
+  else if(state.tab==="foods") state.selectedFood!=null ? renderFoodDetail() : renderFoodList();
   else if(state.tab==="assess") renderAssess();
   window.scrollTo(0,0);
 }
@@ -59,7 +65,7 @@ function renderHome(){
     html += `<div class="card">
       <strong style="color:var(--danger);font-size:18px">⚠ 저작능력 평가가 필요합니다</strong>
       <p class="sub" style="margin:10px 0">먼저 15문항 자가 평가를 완료하면\n나에게 맞는 손질 기준이 적용됩니다.</p>
-      <button class="btn btn-primary" onclick="goAssessStart()">평가 시작하기</button>
+      <button class="btn btn-primary" onclick="setTab('assess')">평가 시작하기</button>
     </div>`;
   }
   html += `<h2>빠른 손질 안내</h2>`;
@@ -121,7 +127,7 @@ function guideRow(label,text){ return `<div class="guide-block"><div class="labe
 function setFoodStage(n){ state.selectedStage=n; render(); }
 function backToList(){ state.selectedFood=null; render(); }
 
-// ===== 재료 촬영 (데모 시뮬레이션) =====
+// ===== 재료 촬영 =====
 function renderCamera(){
   const s = curStage();
   let frame = "";
@@ -132,7 +138,7 @@ function renderCamera(){
     const ok = state.conf>=70;
     frame = `<div class="big">${f.emoji}</div><div style="font-size:26px;font-weight:800;color:var(--navy)">${f.name}</div>
       <div class="conf" style="color:${ok?'var(--safe)':'var(--warn)'}">인식 확신도 ${state.conf}%</div>`;
-  } else if(state.cam==="failed") frame = `<div class="big">⚠️</div><div style="font-weight:800;color:var(--navy)">재료가 잘 안 보여요</div><div class="note" style="text-align:center">밝은 곳에서 한 가지 재료만\n화면 가운데 두고 다시 찍어주세요</div>`;
+  } else if(state.cam==="failed") frame = `<div class="big">⚠️</div><div style="font-weight:800;color:var(--navy)">재료가 잘 안 보여요</div>`;
 
   let html = `<h1>재료 촬영</h1><div class="cam-frame">${frame}</div>`;
   if(state.cam==="done" && state.recog!=null){
@@ -155,17 +161,79 @@ function simulate(){
 }
 
 // ===== 저작 평가 =====
-function goAssessStart(){ state.answers={}; state.qIndex=0; state.assessMode="quiz"; setTab("assess"); }
 function renderAssess(){
-  const s = curStage();
+  if(state.assessMode==="form"){ renderProfileForm(); return; }
   if(state.assessMode==="quiz"){ renderQuiz(); return; }
   if(state.assessMode==="result"){ renderResult(); return; }
+  // intro
+  const s = curStage();
   let html = `<h1>저작능력 자가 평가</h1><p class="sub">CAQ-SE v1.0 · 15문항 · 5개 영역</p>`;
   if(s) html += stageCardHTML(STAGE_INFO[s]);
-  html += `<button class="btn btn-primary" onclick="goAssessStart()">${s?"다시 평가하기":"평가 시작하기"}</button>
+  html += `<button class="btn btn-primary" onclick="startProfile()">${s?"다시 평가하기":"평가 시작하기"}</button>
     <p class="note">※ 본 평가는 의료 진단을 대체하지 않습니다. 전문 평가가 필요하면 치과·재활의학과 전문의와 상담하세요.</p>`;
   app.innerHTML = html;
 }
+
+function startProfile(){ state.assessMode="form"; render(); }
+
+function todayStr(){ const d=new Date(); return d.toISOString().slice(0,10); }
+
+function renderProfileForm(){
+  const p = state.profile || {};
+  let html = `
+  <div style="text-align:center;margin-bottom:6px">
+    <h1 style="font-size:26px">고령자 식품 안전 앱</h1>
+    <div style="color:var(--teal);font-weight:800;font-size:18px">저작능력 자가 평가지</div>
+    <div style="color:#aab2bd;font-size:12px;letter-spacing:1px;margin-top:6px">CHEWING ABILITY SELF-ASSESSMENT QUESTIONNAIRE | CAQ-SE V1.0</div>
+  </div>
+  <div class="card">
+    <div class="form-head"><span class="ic">🗒</span> 평가 대상자 정보 입력 (안전 분석용)</div>
+    <div class="divider"></div>
+    <div class="grid2">
+      <div class="field"><label>성 함</label>
+        <input id="pf_name" type="text" placeholder="이름을 입력하세요" value="${p.name||''}"></div>
+      <div class="field"><label>평가 일자</label>
+        <input id="pf_date" type="date" value="${p.date||todayStr()}"></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>생년월일</label>
+        <div class="dob">
+          <input id="pf_y" type="number" inputmode="numeric" placeholder="년" value="${p.y||''}">
+          <input id="pf_m" type="number" inputmode="numeric" placeholder="월" value="${p.m||''}">
+          <input id="pf_d" type="number" inputmode="numeric" placeholder="일" value="${p.d||''}">
+        </div></div>
+      <div class="field"><label>실제 평가자 구분</label>
+        <select id="pf_by">
+          <option ${p.by==='본인 스스로 작성'?'selected':''}>본인 스스로 작성</option>
+          <option ${p.by==='보호자 작성'?'selected':''}>보호자 작성</option>
+          <option ${p.by==='의료진 작성'?'selected':''}>의료진 작성</option>
+        </select></div>
+    </div>
+  </div>
+  <div class="notice">
+    <span class="badge">안내</span>
+    <div class="lead">본 질문지는 고령자의 씹기(저작) 능력을 정교하게 파악하여, 보다 안심할 수 있는 최적의 음식 크기와 손질 방법을 종합 안내하기 위한 신뢰도 기반 자가 분석 도구입니다.</div>
+    <div class="desc">각 문항을 천천히 차근차근 읽고, 현재 어르신의 가장 일상적인 물리 조건에 가까운 답변을 편안하게 골라주세요. 정해진 모범 해설은 없으며, 일관성 있고 솔직한 응답만이 가장 정확한 결과를 드립니다.</div>
+    <div class="warn">⚠︎ 본 평가는 자가 정보 취합이며 정식 임상 의료 진단을 대체하지 않습니다. 전문적 상태 개선이 필요하시면 치과 또는 인근 재활의학과 전문의와 상담하십시오.</div>
+  </div>
+  <button class="btn btn-primary" onclick="submitProfile()">평가 시작하기 (15문항) ›</button>
+  <button class="btn-ghost" style="margin-top:8px" onclick="state.assessMode='intro';render()">‹ 뒤로</button>`;
+  app.innerHTML = html;
+}
+
+function submitProfile(){
+  const g = id => document.getElementById(id).value.trim();
+  const name = g("pf_name");
+  if(!name){ alert("성함을 입력해 주세요."); return; }
+  state.profile = {
+    name, date: g("pf_date"),
+    y: g("pf_y"), m: g("pf_m"), d: g("pf_d"),
+    by: document.getElementById("pf_by").value
+  };
+  saveProfile(state.profile);
+  state.answers={}; state.qIndex=0; state.assessMode="quiz"; render();
+}
+
 function renderQuiz(){
   const q = QUESTIONS[state.qIndex];
   const pct = (state.qIndex/QUESTIONS.length)*100;
@@ -178,6 +246,7 @@ function renderQuiz(){
       <span>${text}</span>${on?'<span class="ck">✓</span>':''}</div>`;
   });
   if(state.qIndex>0) html += `<button class="btn-ghost" style="margin-top:10px" onclick="prevQ()">‹ 이전</button>`;
+  else html += `<button class="btn-ghost" style="margin-top:10px" onclick="state.assessMode='form';render()">‹ 정보 수정</button>`;
   app.innerHTML = html;
 }
 function pick(id,score){
@@ -186,19 +255,25 @@ function pick(id,score){
   else { state.total = totalScore(state.answers); save(state.total); state.assessMode="result"; render(); }
 }
 function prevQ(){ if(state.qIndex>0){ state.qIndex--; render(); } }
+
 function renderResult(){
-  const t = state.total, s = stageFor(t), info = STAGE_INFO[s];
-  let html = `<div class="card">
+  const t = state.total, s = stageFor(t), info = STAGE_INFO[s], p = state.profile||{};
+  let who = "";
+  if(p.name){
+    const dob = (p.y&&p.m&&p.d)? ` · ${p.y}.${String(p.m).padStart(2,'0')}.${String(p.d).padStart(2,'0')}` : "";
+    who = `<div class="who-line">${p.name}${dob} · ${p.by||''}</div>`;
+  }
+  let html = who + `<div class="card">
     <div class="result-score" style="color:${info.color}">${t}점</div>
     <div class="result-stage">${info.title}</div></div>`;
   html += stageCardHTML(info);
   html += `<h2>영역별 분석</h2>`;
   Object.keys(DOMAINS).forEach(d=>{
-    const got = domainScore(d, state.answers), max = DOMAINS[d].max, p = Math.round(got/max*100);
-    const weak = p<50;
+    const got = domainScore(d, state.answers), max = DOMAINS[d].max, pp = Math.round(got/max*100);
+    const weak = pp<50;
     html += `<div class="card">
-      <div class="dom-head"><span>${DOMAINS[d].label}</span><span style="color:var(--textS);font-weight:600">${got}/${max} · ${p}%</span></div>
-      <div class="bar"><span style="width:${p}%;background:${weak?'var(--danger)':'var(--teal)'}"></span></div>
+      <div class="dom-head"><span>${DOMAINS[d].label}</span><span style="color:var(--textS);font-weight:600">${got}/${max} · ${pp}%</span></div>
+      <div class="bar"><span style="width:${pp}%;background:${weak?'var(--danger)':'var(--teal)'}"></span></div>
       ${weak?'<div class="warn-text">⚠︎ 취약 영역 — 주의가 필요합니다</div>':''}</div>`;
   });
   html += `<button class="btn btn-primary" onclick="state.selectedFood=null;setTab('foods')">내 단계에 맞는 손질 안내 보기</button>`;
