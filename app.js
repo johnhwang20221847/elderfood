@@ -257,9 +257,29 @@ function renderQuiz(){
   app.innerHTML = html;
 }
 function pick(id,score){
+
   state.answers[id]=score;
-  if(state.qIndex < QUESTIONS.length-1){ state.qIndex++; render(); }
-  else { state.total = totalScore(state.answers); save(state.total); state.assessMode="result"; render(); }
+
+  if(state.qIndex < QUESTIONS.length-1){
+
+    state.qIndex++;
+
+    render();
+
+  }else{
+
+    state.total = totalScore(state.answers);
+
+    save(state.total);
+
+    saveSurveyToFirebase();
+
+    state.assessMode="result";
+
+    render();
+
+  }
+
 }
 function prevQ(){ if(state.qIndex>0){ state.qIndex--; render(); } }
 
