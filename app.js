@@ -1,3 +1,10 @@
+import { db } from "./firebase.js";
+
+import {
+  collection,
+  addDoc,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 const KEY = "caq_total_v1";
 const PKEY = "caq_profile_v1";
 const state = {
@@ -281,3 +288,35 @@ function renderResult(){
 }
 
 render();
+async function saveSurveyToFirebase(){
+
+  try{
+
+    const score = totalScore(state.answers);
+
+    await addDoc(
+      collection(db, "surveys"),
+      {
+
+        profile: state.profile,
+
+        answers: state.answers,
+
+        totalScore: score,
+
+        stage: stageFor(score),
+
+        createdAt: serverTimestamp()
+
+      }
+    );
+
+    console.log("Firebase 저장 완료");
+
+  }catch(error){
+
+    console.error(error);
+
+  }
+
+}
