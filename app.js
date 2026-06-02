@@ -317,17 +317,11 @@ async function saveSurveyToFirebase(){
     await addDoc(
       collection(db, "surveys"),
       {
-
         profile: state.profile,
-
         answers: state.answers,
-
         totalScore: score,
-
         stage: stageFor(score),
-
         createdAt: serverTimestamp()
-
       }
     );
 
@@ -335,7 +329,7 @@ async function saveSurveyToFirebase(){
 
   }catch(error){
 
-    console.error(error);
+    console.error("Firebase 저장 실패:", error);
 
   }
 
