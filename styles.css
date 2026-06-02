@@ -1,4 +1,4 @@
-:root{
+root{
   --navy:#16233f; --teal:#3dbe9b; --bg:#f5f7fa; --card:#fff;
   --textP:#1f2733; --textS:#5b6776;
   --safe:#34b36b; --warn:#f2bd33; --danger:#d94545;
@@ -58,3 +58,21 @@ h2{font-size:20px;color:var(--navy);margin:20px 0 10px}
 .tab.active{color:var(--teal)}
 .spinner{width:46px;height:46px;border:5px solid #d7dde4;border-top-color:var(--teal);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+
+
+/* ===== 인적사항 입력 폼 ===== */
+.form-head{display:flex;align-items:center;gap:8px;font-size:17px;font-weight:800;color:var(--navy);margin-bottom:6px}
+.form-head .ic{color:var(--teal)}
+.field{margin-top:14px}
+.field>label{display:block;font-size:14px;font-weight:700;color:var(--textS);margin-bottom:6px}
+.field input,.field select{width:100%;border:1.5px solid #e6e9ee;border-radius:12px;padding:14px;font-size:17px;font-family:inherit;background:#fff;color:var(--textP)}
+.field input:focus,.field select:focus{outline:none;border-color:var(--teal)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.dob{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:8px}
+.dob input{text-align:center}
+.notice{background:#fdf6e8;border:1px solid #f3e2bd;border-radius:16px;padding:16px;margin:18px 0}
+.notice .badge{display:inline-block;background:var(--s2);color:#fff;font-size:13px;font-weight:800;padding:4px 12px;border-radius:10px;margin-bottom:8px}
+.notice .lead{font-size:16px;font-weight:700;color:var(--textP);line-height:1.55}
+.notice .desc{font-size:14px;color:var(--textS);margin-top:8px;line-height:1.55}
+.notice .warn{font-size:13px;color:#b9791f;margin-top:10px;padding-top:10px;border-top:1px dashed #e6d3a3;line-height:1.55}
+.who-line{font-size:14px;color:var(--textS);margin-bottom:10px}
