@@ -92,3 +92,37 @@ h2{font-size:20px;color:var(--navy);margin:22px 0 10px}
 .notice .desc{font-size:14px;color:#6b5a32;margin-top:8px;line-height:1.55}
 .notice .warn{font-size:13px;color:#a9741a;margin-top:10px;padding-top:10px;border-top:1px dashed #e0c889;line-height:1.55}
 .who-line{font-size:14px;color:var(--textS);margin-bottom:10px;font-weight:600}
+
+/* 홈 복귀 버튼 스타일 */
+.home-return-button {
+  position: fixed; /* 화면에 고정 */
+  top: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background-color: rgba(255, 255, 255, 0.9); /* 반투명 흰색 */
+  border: 1px solid #ddd;
+  border-radius: 30px;
+  text-decoration: none;
+  color: #333;
+  font-weight: bold;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  z-index: 9999; /* 다른 요소보다 위에 표시 */
+  transition: all 0.3s ease;
+}
+
+.home-return-button:hover {
+  background-color: #000; /* 마우스 올리면 검은색으로 */
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+.home-icon {
+  font-size: 18px;
+}
+
+.home-text {
+  font-size: 14px;
+}
