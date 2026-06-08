@@ -325,6 +325,7 @@ async function saveSurveyToFirebase(){
 
     // ✅ 2) assessments 서브컬렉션에 문항별 점수 저장 (개별 필드)
     await addDoc(collection(db, "users", userRef.id, "assessments"), {
+      userId:       userRef.id,
       q01: state.answers[1]  ?? null,
       q02: state.answers[2]  ?? null,
       q03: state.answers[3]  ?? null,
