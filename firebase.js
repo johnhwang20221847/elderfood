@@ -1,8 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-
-import {
-  getFirestore
-} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+// 1. Auth 모듈 임포트 추가
+import { getAuth } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAxjdIZc5eDEgzo86SWLOrXCAwoQHyETa8",
@@ -16,4 +15,6 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
+// 2. 외부 파일(app.js)에서 사용할 수 있도록 두 객체 모두 export
 export const db = getFirestore(app);
+export const auth = getAuth(app);
