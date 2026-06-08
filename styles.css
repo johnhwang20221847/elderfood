@@ -126,3 +126,33 @@ h2{font-size:20px;color:var(--navy);margin:22px 0 10px}
 .home-text {
   font-size: 14px;
 }
+
+/* ===== 🔒 추가된 로그인/회원가입 컴포넌트 전용 스타일 ===== */
+.btn-teal {
+  background-color: var(--teal);
+  color: #fff;
+  box-shadow: 0 3px 10px rgba(47,168,136,.25);
+}
+.btn-teal:active {
+  background-color: var(--teal-d);
+}
+.auth-links {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--textS);
+}
+.auth-links span {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--teal-d);
+  text-decoration: none;
+  margin: 0 6px;
+}
+.auth-links span:hover {
+  text-decoration: underline;
+}
+.field input[type="email"], 
+.field input[type="password"] {
+  text-align: left; /* 인적사항 년/월/일 중앙 정렬과 구분을 위해 왼쪽 정렬 강제 */
+}
