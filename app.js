@@ -308,30 +308,48 @@ function renderResult(){
   app.innerHTML = html;
 }
 async function saveSurveyToFirebase(){
-
-  try{
-
+  try {
     const score = totalScore(state.answers);
+    const p = state.profile || {};
 
-    await addDoc(
-      collection(db, "surveys"),
-      {
-        profile: state.profile,
-        answers: state.answers,
-        totalScore: score,
-        stage: stageFor(score),
-        createdAt: serverTimestamp()
-      }
-    );
+    // ✅ 1) users 컬렉션에 기본 정보 저장 (flat 구조)
+    const userRef = await addDoc(collection(db, "users"), {
+      name:          p.name   || "",
+      evalDate:      p.date   || "",
+      birthYear:     p.y      ? parseInt(p.y, 10)  : null,
+      birthMonth:    p.m      ? parseInt(p.m, 10)  : null,
+      birthDay:      p.d      ? parseInt(p.d, 10)  : null,
+      evaluatorType: p.by     || "",
+      createdAt:     serverTimestamp()
+    });
 
-    console.log("Firebase 저장 완료");
+    // ✅ 2) assessments 서브컬렉션에 문항별 점수 저장 (개별 필드)
+    await addDoc(collection(db, "users", userRef.id, "assessments"), {
+      q01: state.answers[1]  ?? null,
+      q02: state.answers[2]  ?? null,
+      q03: state.answers[3]  ?? null,
+      q04: state.answers[4]  ?? null,
+      q05: state.answers[5]  ?? null,
+      q06: state.answers[6]  ?? null,
+      q07: state.answers[7]  ?? null,
+      q08: state.answers[8]  ?? null,
+      q09: state.answers[9]  ?? null,
+      q10: state.answers[10] ?? null,
+      q11: state.answers[11] ?? null,
+      q12: state.answers[12] ?? null,
+      q13: state.answers[13] ?? null,
+      q14: state.answers[14] ?? null,
+      q15: state.answers[15] ?? null,
+      totalScore:   score,
+      chewingLevel: stageFor(score) + "단계",
+      takenAt:      serverTimestamp()
+    });
 
-  }catch(error){
+    console.log("Firebase 저장 완료 — userId:", userRef.id);
 
+  } catch(error) {
     console.error("Firebase 저장 실패:", error);
-
   }
-
 }
 window.setTab = setTab;
 window.startProfile = startProfile;
