@@ -86,20 +86,36 @@ function stageCardHTML(info){
 
 function renderHome(){
   const s = curStage();
+  const p = state.profile || {};
+  
+  // 사용자 정보 표시 분기 처리
+  const userGreeting = p.name 
+    ? `<span style="font-size:14px; font-weight:600; color:var(--textS); background:#fff; padding:4px 10px; border-radius:20px; border:1px solid var(--line);">${p.name} 어르신 계정</span>`
+    : `<span style="font-size:14px; font-weight:600; color:var(--textS);">반갑습니다!</span>`;
+
   let html = `
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-      <h1>고령자 식품 안전</h1>
-      <button class="btn-ghost" style="color:var(--danger); font-size:14px; font-weight:bold;" onclick="handleLogOut()">로그아웃</button>
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+      <div>
+        <h1 style="margin-bottom:2px; line-height:1.2;">고령자 식품\n안전</h1>
+      </div>
+      <div style="display:flex; flex-direction:column; align-items:flex-end; gap:8px;">
+        <button class="btn-ghost" style="color:var(--danger); font-size:14px; font-weight:800; padding:6px 12px; border:1px solid var(--danger); border-radius:8px; background:rgba(210,63,63,0.04); width:auto;" onclick="handleLogOut()">로그아웃</button>
+        ${userGreeting}
+      </div>
     </div>
-    <p class="sub">저작능력에 맞춰 안전하게 먹을 수 있는\n음식 크기·형태·조리법을 안내합니다.</p>`;
-  if(s){ html += stageCardHTML(STAGE_INFO[s]); }
-  else {
+    <p class="sub" style="margin-bottom:18px;">저작능력에 맞춰 안전하게 먹을 수 있는\n음식 크기·형태·조리법을 안내합니다.</p>
+  `;
+
+  if(s){ 
+    html += stageCardHTML(STAGE_INFO[s]); 
+  } else {
     html += `<div class="card">
       <strong style="color:var(--danger);font-size:18px">⚠ 저작능력 평가가 필요합니다</strong>
       <p class="sub" style="margin:10px 0">먼저 15문항 자가 평가를 완료하면\n나에게 맞는 손질 기준이 적용됩니다.</p>
       <button class="btn btn-primary" onclick="setTab('assess')">평가 시작하기</button>
     </div>`;
   }
+
   html += `<h2>빠른 손질 안내</h2>`;
   FOODS.forEach((f,i)=>{
     html += `<div class="card food-item" onclick="openFood(${i})">
