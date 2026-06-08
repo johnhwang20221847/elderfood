@@ -1,13 +1,25 @@
-import { db } from "./firebase.js";
-
+import { db, auth } from "./firebase.js";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  sendEmailVerification,
+  sendPasswordResetEmail,
+  signOut,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 import {
   collection,
   addDoc,
+  doc,
+  setDoc,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+
 const KEY = "caq_total_v1";
 const PKEY = "caq_profile_v1";
+
 const state = {
+  user: null, // 로그인된 유저 객체 저장 (null이면 비로그인 상태)
   tab: "home",
   total: load(),
   answers: {},
@@ -20,6 +32,9 @@ const state = {
   assessMode: "intro",
   profile: loadProfile(),
 };
+
+// 인증 화면 모드 제어 ("login" | "signup" | "forgot")
+let authMode = "login"; 
 
 function load(){ const v = localStorage.getItem(KEY); return v==null?null:parseInt(v,10); }
 function save(t){ localStorage.setItem(KEY, String(t)); }
@@ -39,6 +54,12 @@ function setTab(t){
 document.querySelectorAll(".tab").forEach(b=> b.onclick = ()=> setTab(b.dataset.tab));
 
 function render(){
+  // 🔒 로그인 상태가 아니면 무조건 인증 화면 전용 렌더링 후 종료
+  if (!state.user) {
+    renderAuthScreen();
+    return;
+  }
+
   const s = curStage();
   stageBadge.textContent = s ? STAGE_INFO[s].title.split(" · ")[0] : "평가 전";
   if(state.tab==="home") renderHome();
@@ -65,7 +86,11 @@ function stageCardHTML(info){
 
 function renderHome(){
   const s = curStage();
-  let html = `<h1>고령자 식품 안전</h1>
+  let html = `
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <h1>고령자 식품 안전</h1>
+      <button class="btn-ghost" style="color:var(--danger); font-size:14px; font-weight:bold;" onclick="handleLogOut()">로그아웃</button>
+    </div>
     <p class="sub">저작능력에 맞춰 안전하게 먹을 수 있는\n음식 크기·형태·조리법을 안내합니다.</p>`;
   if(s){ html += stageCardHTML(STAGE_INFO[s]); }
   else {
@@ -172,7 +197,7 @@ function renderAssess(){
   if(state.assessMode==="form"){ renderProfileForm(); return; }
   if(state.assessMode==="quiz"){ renderQuiz(); return; }
   if(state.assessMode==="result"){ renderResult(); return; }
-  // intro
+  
   const s = curStage();
   let html = `<h1>저작능력 자가 평가</h1><p class="sub">CAQ-SE v1.0 · 15문항 · 5개 영역</p>`;
   if(s) html += stageCardHTML(STAGE_INFO[s]);
@@ -182,7 +207,6 @@ function renderAssess(){
 }
 
 function startProfile(){ state.assessMode="form"; render(); }
-
 function todayStr(){ const d=new Date(); return d.toISOString().slice(0,10); }
 
 function renderProfileForm(){
@@ -256,31 +280,20 @@ function renderQuiz(){
   else html += `<button class="btn-ghost" style="margin-top:10px" onclick="state.assessMode='form';render()">‹ 정보 수정</button>`;
   app.innerHTML = html;
 }
+
 function pick(id,score){
-
   state.answers[id]=score;
-
   if(state.qIndex < QUESTIONS.length-1){
-
     state.qIndex++;
-
     render();
-
   }
   else{
-
     state.total = totalScore(state.answers);
-
     save(state.total);
-
     saveSurveyToFirebase();
-
     state.assessMode="result";
-
     render();
-
   }
-
 }
 function prevQ(){ if(state.qIndex>0){ state.qIndex--; render(); } }
 
@@ -307,13 +320,124 @@ function renderResult(){
   html += `<button class="btn btn-primary" onclick="state.selectedFood=null;setTab('foods')">내 단계에 맞는 손질 안내 보기</button>`;
   app.innerHTML = html;
 }
+
+// ===== 🔒 Firebase Auth 전용 UI 인터페이스 렌더링 =====
+function renderAuthScreen() {
+  let html = `<div class="card" style="max-width: 400px; margin: 60px auto; padding: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.08);">`;
+  
+  if (authMode === "login") {
+    html += `
+      <h2 style="text-align:center; margin-bottom:10px;">로그인</h2>
+      <p class="sub" style="text-align:center; margin-bottom:24px;">고령자 식품 안전 서비스 로그인이 필요합니다.</p>
+      <div class="field" style="margin-bottom:15px;"><label>이메일 주소</label><input id="auth_email" type="email" placeholder="example@email.com" style="width:100%; padding:10px; box-sizing:border-box;"></div>
+      <div class="field" style="margin-bottom:20px;"><label>비밀번호</label><input id="auth_pw" type="password" placeholder="비밀번호 입력" style="width:100%; padding:10px; box-sizing:border-box;"></div>
+      <button class="btn btn-primary" style="width:100%; margin-bottom:15px;" onclick="handleLogin()">로그인</button>
+      <div style="text-align:center; font-size:14px; color:var(--textS);">
+        <span style="cursor:pointer; text-decoration:underline;" onclick="switchAuthMode('signup')">회원가입</span> | 
+        <span style="cursor:pointer; text-decoration:underline;" onclick="switchAuthMode('forgot')">비밀번호 찾기</span>
+      </div>`;
+  } else if (authMode === "signup") {
+    html += `
+      <h2 style="text-align:center; margin-bottom:10px;">회원가입</h2>
+      <p class="sub" style="text-align:center; margin-bottom:24px;">새로운 분석 계정을 생성합니다.</p>
+      <div class="field" style="margin-bottom:15px;"><label>이메일 주소</label><input id="auth_email" type="email" placeholder="example@email.com" style="width:100%; padding:10px; box-sizing:border-box;"></div>
+      <div class="field" style="margin-bottom:20px;"><label>비밀번호</label><input id="auth_pw" type="password" placeholder="6자리 이상 입력" style="width:100%; padding:10px; box-sizing:border-box;"></div>
+      <button class="btn btn-teal" style="width:100%; margin-bottom:15px;" onclick="handleSignUp()">회원가입 (인증 메일 발송)</button>
+      <div style="text-align:center; font-size:14px;">
+        <span style="color:var(--textS); cursor:pointer; text-decoration:underline;" onclick="switchAuthMode('login')">이미 계정이 있으신가요? 로그인</span>
+      </div>`;
+  } else if (authMode === "forgot") {
+    html += `
+      <h2 style="text-align:center; margin-bottom:10px;">비밀번호 찾기</h2>
+      <p class="sub" style="text-align:center; margin-bottom:24px;">가입하신 이메일로 초기화 링크를 전송합니다.</p>
+      <div class="field" style="margin-bottom:20px;"><label>이메일 주소</label><input id="auth_email" type="email" placeholder="example@email.com" style="width:100%; padding:10px; box-sizing:border-box;"></div>
+      <button class="btn btn-navy" style="width:100%; margin-bottom:15px;" onclick="handleForgotPassword()">비밀번호 재설정 메일 발송</button>
+      <div style="text-align:center; font-size:14px;">
+        <span style="color:var(--textS); cursor:pointer; text-decoration:underline;" onclick="switchAuthMode('login')">로그인 화면으로 돌아가기</span>
+      </div>`;
+  }
+  
+  html += `</div>`;
+  app.innerHTML = html;
+}
+
+function switchAuthMode(mode) {
+  authMode = mode;
+  render();
+}
+
+// ===== 🔒 Firebase Auth 핵심 처리 로직 비동기 함수 =====
+async function handleSignUp() {
+  const email = document.getElementById("auth_email").value.trim();
+  const password = document.getElementById("auth_pw").value;
+  if(!email || !password) { alert("이메일과 비밀번호를 모두 입력해주세요."); return; }
+
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    await sendEmailVerification(userCredential.user);
+    alert("인증 메일이 발송되었습니다! 가입하신 이메일함을 확인하여 인증 링크를 클릭한 후 로그인해 주세요.");
+    await signOut(auth); 
+    switchAuthMode("login");
+  } catch (error) {
+    alert("회원가입 실패: " + error.message);
+  }
+}
+
+async function handleLogin() {
+  const email = document.getElementById("auth_email").value.trim();
+  const password = document.getElementById("auth_pw").value;
+  if(!email || !password) { alert("아이디와 비밀번호를 입력해주세요."); return; }
+
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    
+    // 이메일 링크 인증 승인 여부 검사 파트
+    if (!userCredential.user.emailVerified) {
+      alert("이메일 인증이 완료되지 않았습니다. 전송된 메일의 인증 링크를 클릭해 주세요.");
+      await signOut(auth);
+      return;
+    }
+  } catch (error) {
+    alert("로그인 실패: 이메일 주소 혹은 비밀번호를 다시 확인하세요.");
+  }
+}
+
+async function handleForgotPassword() {
+  const email = document.getElementById("auth_email").value.trim();
+  if(!email) { alert("이메일 주소를 정확히 입력해주세요."); return; }
+
+  try {
+    await sendPasswordResetEmail(auth, email);
+    alert("비밀번호 재설정 이메일 가이드 링크가 성공적으로 발송되었습니다.");
+    switchAuthMode("login");
+  } catch (error) {
+    alert("메일 발송 오류: " + error.message);
+  }
+}
+
+async function handleLogOut() {
+  if(confirm("로그아웃 하시겠습니까? 데이터 안전을 위해 세션이 비활성화됩니다.")) {
+    try {
+      await signOut(auth);
+      state.user = null;
+      render();
+    } catch (error) {
+      console.error("로그아웃 처리 중 예외 발생:", error);
+    }
+  }
+}
+
+// ===== 💾 유저별 독립 인스턴스 Firestore 동기화 저장 함수 =====
 async function saveSurveyToFirebase(){
   try {
+    if (!state.user) return; 
+    
+    const uid = state.user.uid; // 현재 로그인 세션을 획득한 고유 유저 ID(UID)
     const score = totalScore(state.answers);
     const p = state.profile || {};
 
-    // ✅ 1) users 컬렉션에 기본 정보 저장 (flat 구조)
-    const userRef = await addDoc(collection(db, "users"), {
+    // ✅ 1) users 컬렉션 고유 도큐먼트 ID 명을 유저 고유 UID로 매핑 (문서 덮어쓰기/업데이트형 생성)
+    await setDoc(doc(db, "users", uid), {
       name:          p.name   || "",
       evalDate:      p.date   || "",
       birthYear:     p.y      ? parseInt(p.y, 10)  : null,
@@ -323,9 +447,9 @@ async function saveSurveyToFirebase(){
       createdAt:     serverTimestamp()
     });
 
-    // ✅ 2) assessments 서브컬렉션에 문항별 점수 저장 (개별 필드)
-    await addDoc(collection(db, "users", userRef.id, "assessments"), {
-      userId:       userRef.id,
+    // ✅ 2) assessments 하위 서브컬렉션에 유저 격리 ID 필드를 명시하여 레코드 추가 기록 누적
+    await addDoc(collection(db, "users", uid, "assessments"), {
+      userId:       uid,  // BigQuery 테이블 조인(JOIN) 통합 분석용 Key값 매핑 추가
       q01: state.answers[1]  ?? null,
       q02: state.answers[2]  ?? null,
       q03: state.answers[3]  ?? null,
@@ -346,12 +470,23 @@ async function saveSurveyToFirebase(){
       takenAt:      serverTimestamp()
     });
 
-    console.log("Firebase 저장 완료 — userId:", userRef.id);
+    console.log("Firebase 유저 세션별 데이터 독립 인스턴스 격리 저장 완료 — UID:", uid);
 
   } catch(error) {
-    console.error("Firebase 저장 실패:", error);
+    console.error("Firebase 트랜잭션 도중 오류 발생:", error);
   }
 }
+
+// 사용자의 로그인/로그아웃 상태 변화를 실시간 감지하여 상태 인터셉트 리스너 배치
+onAuthStateChanged(auth, (user) => {
+  if (user && user.emailVerified) {
+    state.user = user;
+  } else {
+    state.user = null;
+  }
+  render(); 
+});
+
 window.setTab = setTab;
 window.startProfile = startProfile;
 window.submitProfile = submitProfile;
@@ -362,6 +497,8 @@ window.backToList = backToList;
 window.setFoodStage = setFoodStage;
 window.simulate = simulate;
 window.state = state;
-
-
-render();
+window.switchAuthMode = switchAuthMode;
+window.handleSignUp = handleSignUp;
+window.handleLogin = handleLogin;
+window.handleForgotPassword = handleForgotPassword;
+window.handleLogOut = handleLogOut;
