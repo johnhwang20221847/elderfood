@@ -68,7 +68,7 @@ h2{font-size:20px;color:var(--navy);margin:22px 0 10px}
 .note{font-size:13px;color:var(--textS);margin-top:12px;white-space:pre-line}
 
 .tabbar{position:fixed;bottom:0;left:0;right:0;max-width:520px;margin:0 auto;background:#fff;border-top:1px solid var(--line);display:flex;padding:8px 0 14px;box-shadow:0 -2px 8px rgba(22,35,63,.06)}
-.tab{flex:1;border:none;background:none;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:22px;color:#9aa3af;cursor:pointer;font-family:inherit}
+.tab{flex:1;border:none;background:none;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:18px;color:#9aa3af;cursor:pointer;font-family:inherit}
 .tab span{font-size:11px;font-weight:700}
 .tab.active{color:var(--teal-d)}
 
