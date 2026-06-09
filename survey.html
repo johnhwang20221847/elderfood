@@ -172,38 +172,57 @@
       margin-top: -10px;
     }
 
-    /* 5점 척도 */
-    .scale-wrap {
-      display: flex;
-      gap: 8px;
-      justify-content: space-between;
+    /* ── 5점 척도 라디오 행 ── */
+    .scale-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 4px;
     }
-    .scale-btn {
-      flex: 1;
-      height: 48px;
-      border: 2px solid var(--border);
-      border-radius: 10px;
-      background: var(--white);
-      font-size: 14px;
-      font-weight: 600;
+    .scale-table .sh th {
+      font-size: 13px; font-weight: 700;
       color: var(--text-mid);
+      text-align: center;
+      padding: 0 0 10px;
+    }
+    .scale-table .sh th.lbl-left  { text-align: left;  font-size: 11px; color: var(--text-light); white-space: nowrap; width: 20%; }
+    .scale-table .sh th.lbl-right { text-align: right; font-size: 11px; color: var(--text-light); white-space: nowrap; width: 20%; }
+    .scale-table .sr td { text-align: center; padding: 2px 0; }
+    .scale-table .sr td.lbl-left  { text-align: left;  font-size: 11px; color: var(--text-light); white-space: nowrap; padding-right: 4px; }
+    .scale-table .sr td.lbl-right { text-align: right; font-size: 11px; color: var(--text-light); white-space: nowrap; padding-left: 4px; }
+
+    /* 라디오 원 커스텀 */
+    .scale-radio {
+      appearance: none; -webkit-appearance: none;
+      width: 26px; height: 26px;
+      border: 2px solid var(--border);
+      border-radius: 50%;
+      background: var(--white);
       cursor: pointer;
       transition: all 0.18s;
-      position: relative;
+      display: inline-block; vertical-align: middle;
     }
-    .scale-btn:hover { border-color: var(--green-mid); color: var(--green-main); }
-    .scale-btn.selected {
-      background: var(--green-main);
+    .scale-radio:hover { border-color: var(--green-mid); }
+    .scale-radio:checked {
       border-color: var(--green-main);
-      color: var(--white);
+      background: var(--green-main);
+      box-shadow: inset 0 0 0 5px var(--white);
     }
-    .scale-labels {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 6px;
-      font-size: 11px;
-      color: var(--text-light);
+
+    /* NPS 라디오 행 (0~10) */
+    .nps-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 4px;
     }
+    .nps-table th {
+      font-size: 12px; font-weight: 700;
+      color: var(--text-mid);
+      text-align: center;
+      padding: 0 0 8px;
+    }
+    .nps-table .nps-lbl-left  { text-align: left;  font-size: 11px; color: var(--text-light); white-space: nowrap; padding-right: 3px; }
+    .nps-table .nps-lbl-right { text-align: right; font-size: 11px; color: var(--text-light); white-space: nowrap; padding-left: 3px; }
+    .nps-table td { text-align: center; padding: 2px 0; }
 
     /* 단일 선택 */
     .radio-list { display: flex; flex-direction: column; gap: 8px; }
@@ -464,8 +483,22 @@
     <div class="q-card" data-q="1" data-type="scale">
       <div class="q-num">Q1 · 전반적 만족도</div>
       <div class="q-text">서비스를 전반적으로 얼마나 만족하셨나요?</div>
-      <div class="scale-wrap" id="scale-1"></div>
-      <div class="scale-labels"><span>매우 불만족</span><span>매우 만족</span></div>
+      <table class="scale-table">
+        <thead><tr class="sh">
+          <th class="lbl-left">매우 불만족</th>
+          <th>1</th><th>2</th><th>3</th><th>4</th><th>5</th>
+          <th class="lbl-right">매우 만족</th>
+        </tr></thead>
+        <tbody><tr class="sr">
+          <td class="lbl-left"></td>
+          <td><input class="scale-radio" type="radio" name="q1" value="1" onchange="pickScale(1,1)"></td>
+          <td><input class="scale-radio" type="radio" name="q1" value="2" onchange="pickScale(1,2)"></td>
+          <td><input class="scale-radio" type="radio" name="q1" value="3" onchange="pickScale(1,3)"></td>
+          <td><input class="scale-radio" type="radio" name="q1" value="4" onchange="pickScale(1,4)"></td>
+          <td><input class="scale-radio" type="radio" name="q1" value="5" onchange="pickScale(1,5)"></td>
+          <td class="lbl-right"></td>
+        </tr></tbody>
+      </table>
       <p class="warn-text" id="warn-1">응답을 선택해 주세요.</p>
     </div>
 
@@ -473,8 +506,22 @@
     <div class="q-card" data-q="2" data-type="scale">
       <div class="q-num">Q2 · 저작 평가 유용성</div>
       <div class="q-text">15문항 저작 능력 자가 평가가 얼마나 유용했나요?</div>
-      <div class="scale-wrap" id="scale-2"></div>
-      <div class="scale-labels"><span>전혀 유용하지 않음</span><span>매우 유용함</span></div>
+      <table class="scale-table">
+        <thead><tr class="sh">
+          <th class="lbl-left">전혀 유용하지 않음</th>
+          <th>1</th><th>2</th><th>3</th><th>4</th><th>5</th>
+          <th class="lbl-right">매우 유용함</th>
+        </tr></thead>
+        <tbody><tr class="sr">
+          <td class="lbl-left"></td>
+          <td><input class="scale-radio" type="radio" name="q2" value="1" onchange="pickScale(2,1)"></td>
+          <td><input class="scale-radio" type="radio" name="q2" value="2" onchange="pickScale(2,2)"></td>
+          <td><input class="scale-radio" type="radio" name="q2" value="3" onchange="pickScale(2,3)"></td>
+          <td><input class="scale-radio" type="radio" name="q2" value="4" onchange="pickScale(2,4)"></td>
+          <td><input class="scale-radio" type="radio" name="q2" value="5" onchange="pickScale(2,5)"></td>
+          <td class="lbl-right"></td>
+        </tr></tbody>
+      </table>
       <p class="warn-text" id="warn-2">응답을 선택해 주세요.</p>
     </div>
 
@@ -482,8 +529,22 @@
     <div class="q-card" data-q="3" data-type="scale">
       <div class="q-num">Q3 · 손질 안내 정확도</div>
       <div class="q-text">식재료 손질 안내가 본인의 저작 상태에 맞게 제공되었나요?</div>
-      <div class="scale-wrap" id="scale-3"></div>
-      <div class="scale-labels"><span>전혀 맞지 않음</span><span>매우 잘 맞음</span></div>
+      <table class="scale-table">
+        <thead><tr class="sh">
+          <th class="lbl-left">전혀 맞지 않음</th>
+          <th>1</th><th>2</th><th>3</th><th>4</th><th>5</th>
+          <th class="lbl-right">매우 잘 맞음</th>
+        </tr></thead>
+        <tbody><tr class="sr">
+          <td class="lbl-left"></td>
+          <td><input class="scale-radio" type="radio" name="q3" value="1" onchange="pickScale(3,1)"></td>
+          <td><input class="scale-radio" type="radio" name="q3" value="2" onchange="pickScale(3,2)"></td>
+          <td><input class="scale-radio" type="radio" name="q3" value="3" onchange="pickScale(3,3)"></td>
+          <td><input class="scale-radio" type="radio" name="q3" value="4" onchange="pickScale(3,4)"></td>
+          <td><input class="scale-radio" type="radio" name="q3" value="5" onchange="pickScale(3,5)"></td>
+          <td class="lbl-right"></td>
+        </tr></tbody>
+      </table>
       <p class="warn-text" id="warn-3">응답을 선택해 주세요.</p>
     </div>
 
@@ -491,8 +552,22 @@
     <div class="q-card" data-q="4" data-type="scale">
       <div class="q-num">Q4 · 사용 편의성</div>
       <div class="q-text">서비스가 사용하기 쉬웠나요? (화면 구성, 글자 크기, 버튼 등)</div>
-      <div class="scale-wrap" id="scale-4"></div>
-      <div class="scale-labels"><span>매우 어려웠음</span><span>매우 쉬웠음</span></div>
+      <table class="scale-table">
+        <thead><tr class="sh">
+          <th class="lbl-left">매우 어려웠음</th>
+          <th>1</th><th>2</th><th>3</th><th>4</th><th>5</th>
+          <th class="lbl-right">매우 쉬웠음</th>
+        </tr></thead>
+        <tbody><tr class="sr">
+          <td class="lbl-left"></td>
+          <td><input class="scale-radio" type="radio" name="q4" value="1" onchange="pickScale(4,1)"></td>
+          <td><input class="scale-radio" type="radio" name="q4" value="2" onchange="pickScale(4,2)"></td>
+          <td><input class="scale-radio" type="radio" name="q4" value="3" onchange="pickScale(4,3)"></td>
+          <td><input class="scale-radio" type="radio" name="q4" value="4" onchange="pickScale(4,4)"></td>
+          <td><input class="scale-radio" type="radio" name="q4" value="5" onchange="pickScale(4,5)"></td>
+          <td class="lbl-right"></td>
+        </tr></tbody>
+      </table>
       <p class="warn-text" id="warn-4">응답을 선택해 주세요.</p>
     </div>
 
@@ -558,8 +633,22 @@
     <div class="q-card" data-q="9" data-type="scale">
       <div class="q-num">Q9 · 재사용 의향</div>
       <div class="q-text">앞으로도 이 서비스를 계속 이용할 의향이 있나요?</div>
-      <div class="scale-wrap" id="scale-9"></div>
-      <div class="scale-labels"><span>전혀 없음</span><span>매우 그렇다</span></div>
+      <table class="scale-table">
+        <thead><tr class="sh">
+          <th class="lbl-left">전혀 없음</th>
+          <th>1</th><th>2</th><th>3</th><th>4</th><th>5</th>
+          <th class="lbl-right">매우 그렇다</th>
+        </tr></thead>
+        <tbody><tr class="sr">
+          <td class="lbl-left"></td>
+          <td><input class="scale-radio" type="radio" name="q9" value="1" onchange="pickScale(9,1)"></td>
+          <td><input class="scale-radio" type="radio" name="q9" value="2" onchange="pickScale(9,2)"></td>
+          <td><input class="scale-radio" type="radio" name="q9" value="3" onchange="pickScale(9,3)"></td>
+          <td><input class="scale-radio" type="radio" name="q9" value="4" onchange="pickScale(9,4)"></td>
+          <td><input class="scale-radio" type="radio" name="q9" value="5" onchange="pickScale(9,5)"></td>
+          <td class="lbl-right"></td>
+        </tr></tbody>
+      </table>
       <p class="warn-text" id="warn-9">응답을 선택해 주세요.</p>
     </div>
 
@@ -567,8 +656,29 @@
     <div class="q-card" data-q="10" data-type="nps">
       <div class="q-num">Q10 · 추천 의향 (NPS)</div>
       <div class="q-text">주변 지인에게 이 서비스를 추천할 의향은 얼마나 되나요?</div>
-      <div class="q-sub">0 = 전혀 추천하지 않겠다 · 10 = 적극 추천하겠다</div>
-      <div id="nps-wrap" style="display:flex; gap:6px; flex-wrap:wrap; justify-content:center;"></div>
+      <table class="nps-table">
+        <thead><tr>
+          <th class="nps-lbl-left">전혀 추천 안함</th>
+          <th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th>
+          <th>6</th><th>7</th><th>8</th><th>9</th><th>10</th>
+          <th class="nps-lbl-right">적극 추천</th>
+        </tr></thead>
+        <tbody><tr>
+          <td class="nps-lbl-left"></td>
+          <td><input class="scale-radio" type="radio" name="q10" value="0"  onchange="pickNPS(0)"></td>
+          <td><input class="scale-radio" type="radio" name="q10" value="1"  onchange="pickNPS(1)"></td>
+          <td><input class="scale-radio" type="radio" name="q10" value="2"  onchange="pickNPS(2)"></td>
+          <td><input class="scale-radio" type="radio" name="q10" value="3"  onchange="pickNPS(3)"></td>
+          <td><input class="scale-radio" type="radio" name="q10" value="4"  onchange="pickNPS(4)"></td>
+          <td><input class="scale-radio" type="radio" name="q10" value="5"  onchange="pickNPS(5)"></td>
+          <td><input class="scale-radio" type="radio" name="q10" value="6"  onchange="pickNPS(6)"></td>
+          <td><input class="scale-radio" type="radio" name="q10" value="7"  onchange="pickNPS(7)"></td>
+          <td><input class="scale-radio" type="radio" name="q10" value="8"  onchange="pickNPS(8)"></td>
+          <td><input class="scale-radio" type="radio" name="q10" value="9"  onchange="pickNPS(9)"></td>
+          <td><input class="scale-radio" type="radio" name="q10" value="10" onchange="pickNPS(10)"></td>
+          <td class="nps-lbl-right"></td>
+        </tr></tbody>
+      </table>
       <p class="warn-text" id="warn-10">점수를 선택해 주세요.</p>
     </div>
 
@@ -638,40 +748,14 @@
   let current = 1;
   const answers = {};
 
-  /* ── 5점 척도 생성 ── */
-  [1,2,3,4,9].forEach(q => {
-    const wrap = document.getElementById('scale-' + q);
-    if (!wrap) return;
-    for (let i = 1; i <= 5; i++) {
-      const btn = document.createElement('button');
-      btn.className = 'scale-btn';
-      btn.textContent = i;
-      btn.onclick = () => selectScale(q, i, btn);
-      wrap.appendChild(btn);
-    }
-  });
-
-  /* ── NPS 생성 ── */
-  const npsWrap = document.getElementById('nps-wrap');
-  for (let i = 0; i <= 10; i++) {
-    const btn = document.createElement('button');
-    btn.className = 'scale-btn';
-    btn.style.cssText = 'flex:none; width:44px; height:44px; font-size:13px;';
-    btn.textContent = i;
-    btn.onclick = () => { selectNPS(i, btn); };
-    npsWrap.appendChild(btn);
-  }
-
-  function selectScale(q, val, btn) {
-    document.querySelectorAll('#scale-' + q + ' .scale-btn').forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected');
+  /* ── 5점 척도 라디오 핸들러 ── */
+  function pickScale(q, val) {
     answers['Q' + q] = val;
     hideWarn(q);
   }
 
-  function selectNPS(val, btn) {
-    document.querySelectorAll('#nps-wrap .scale-btn').forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected');
+  /* ── NPS 라디오 핸들러 ── */
+  function pickNPS(val) {
     answers['Q10'] = val;
     hideWarn(10);
   }
@@ -836,6 +920,8 @@
   window.selectRadio  = selectRadio;
   window.toggleCheck  = toggleCheck;
   window.copyResult   = copyResult;
+  window.pickScale    = pickScale;
+  window.pickNPS      = pickNPS;
 </script>
 </body>
 </html>
