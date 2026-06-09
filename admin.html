@@ -601,15 +601,15 @@
           <div class="nps-breakdown">
             <div class="nps-seg seg-promoter">
               <div class="seg-pct" id="nps-promo">—%</div>
-              <div class="seg-label">추천자 (9~10)</div>
+              <div class="seg-label">추천자 (5점)</div>
             </div>
             <div class="nps-seg seg-passive">
               <div class="seg-pct" id="nps-pass">—%</div>
-              <div class="seg-label">중립 (7~8)</div>
+              <div class="seg-label">중립 (4점)</div>
             </div>
             <div class="nps-seg seg-detractor">
               <div class="seg-pct" id="nps-detract">—%</div>
-              <div class="seg-label">비추천 (0~6)</div>
+              <div class="seg-label">비추천 (1~3점)</div>
             </div>
           </div>
           <div class="insight-box" style="margin-top:16px;">
@@ -625,7 +625,7 @@
           <div class="bar-chart" id="chart-nps-dist"></div>
           <div class="insight-box" style="margin-top:16px;">
             <div class="insight-label">활용 방법</div>
-            NPS 30 이상이면 경쟁 PT·투자 유치 자료에 <strong style="color:var(--green)">"고객 추천 지수 업계 평균 상회"</strong>로 기재할 수 있습니다.
+            NPS 50 이상이면 경쟁 PT·투자 유치 자료에 <strong style="color:var(--green)">"고객 추천 지수 우수"</strong>로 기재할 수 있습니다. (5점 척도 기준 · 추천자: 5점 / 중립: 4점 / 비추천자: 1~3점)
           </div>
         </div>
       </div>
@@ -843,8 +843,8 @@
     const q1vals = data.map(r=>r.Q1).filter(Number.isFinite);
     const q9vals = data.map(r=>r.Q9).filter(Number.isFinite);
     const q10vals = data.map(r=>r.Q10).filter(v=>v!==undefined&&v!==null);
-    const promoters  = q10vals.filter(v=>v>=5).length;
-    const detractors = q10vals.filter(v=>v<=3).length;
+    const promoters  = q10vals.filter(v=>v>=5).length;   // 5점 = 추천자
+    const detractors = q10vals.filter(v=>v<=3).length;   // 1~3점 = 비추천자 / 4점 = 중립
     const npsScore   = q10vals.length ? Math.round((promoters-detractors)/q10vals.length*100) : null;
 
     const satAvg  = avg(q1vals);
@@ -859,7 +859,7 @@
     document.getElementById('kpi-nps').innerHTML =
       npsScore !== null ? `<span class="${npsScore>=30?'good':npsScore>=0?'warn':'bad'}">${npsScore}</span>` : '—';
     document.getElementById('kpi-nps-sub').innerHTML =
-      npsScore !== null ? `<span class="${npsScore>=50?'good':npsScore>=30?'warn':'bad'}">${npsScore>=50?'🚀 매우 우수':npsScore>=30?'👍 양호':npsScore>=0?'⚠️ 개선 필요':'❌ 위험'}</span>` : '';
+      npsScore !== null ? `<span class="${npsScore>=50?'good':npsScore>=0?'warn':'bad'}">${npsScore>=50?'🚀 매우 우수':npsScore>=0?'👍 양호':'⚠️ 개선 필요'}</span>` : '';
     document.getElementById('kpi-reuse').innerHTML = `${reuseAvg}<span class="unit">/ 5</span>`;
     document.getElementById('kpi-reuse-sub').innerHTML =
       `<span class="${satClass(parseFloat(reuseAvg))}">${parseFloat(reuseAvg)>=4?'리텐션 양호':'리텐션 주의'}</span>`;
@@ -973,13 +973,12 @@
     const detractRate= pct(detractors, q10vals.length);
 
     document.getElementById('nps-score-big').textContent = npsScore !== null ? npsScore : '—';
-    document.getElementById('nps-score-big').className = `nps-big ${npsScore>=50?'good':npsScore>=30?'warn':'bad'}`;
+    document.getElementById('nps-score-big').className = `nps-big ${npsScore>=50?'good':npsScore>=0?'warn':'bad'}`;
     document.getElementById('nps-grade-text').textContent =
       npsScore === null ? '' :
       npsScore >= 50 ? '🚀 Excellent — 투자 유치·경쟁 PT에 강점으로 기재 가능' :
-      npsScore >= 30 ? '👍 Good — 시장 평균 이상, 계속 모니터링' :
-      npsScore >= 0  ? '⚠️ Needs Work — 비추천 요인 파악 후 개선 필요' :
-                       '❌ Critical — 근본적인 서비스 재점검 필요';
+      npsScore >= 0  ? '👍 Good — 계속 모니터링하며 비추천 요인을 파악하세요' :
+                       '⚠️ Needs Work — 3점 이하 응답자의 불편 사항을 집중 분석하세요';
 
     document.getElementById('nps-promo').textContent   = promoRate + '%';
     document.getElementById('nps-pass').textContent    = passRate + '%';
@@ -988,11 +987,11 @@
     document.getElementById('insight-nps-text').textContent =
       npsScore !== null ?
       `NPS ${npsScore}점 (추천자 ${promoRate}% - 비추천자 ${detractRate}%). ${
-        npsScore >= 30 ? '하나 소셜벤처 프로그램 제출 시 "사용자 검증 완료" 근거로 활용 가능합니다.' :
-        '비추천자 그룹의 Q7(불편 사항) 응답을 분석해 이탈 원인을 파악하세요.'}` :
+        npsScore >= 50 ? '하나 소셜벤처 프로그램 제출 시 "사용자 검증 완료" 근거로 활용 가능합니다.' :
+        '3점 이하 응답자의 Q7(불편 사항) 응답을 분석해 이탈 원인을 파악하세요.'}` :
       'NPS 데이터가 없습니다.';
 
-    const npsDistCounts = Array.from({length:5},(_,i)=>[`${i+1}점`, q10vals.filter(v=>v===i).length]);
+    const npsDistCounts = Array.from({length:5},(_,i)=>[`${i+1}점`, q10vals.filter(v=>v===i+1).length]);
     makeBar('chart-nps-dist', npsDistCounts.filter(([,c])=>c>0), q10vals.length);
 
     scaleBarId('chart-q9', data.map(r=>r.Q9).filter(Number.isFinite), data.map(r=>r.Q9).filter(Number.isFinite).length);
@@ -1045,7 +1044,7 @@
       { label:'서비스 만족도',     val:`${satAvg} / 5`, desc:'평균 만족도 점수' },
       { label:'NPS (추천 지수)',   val:`${npsScore ?? '—'}`, desc:'업계 평균 대비 비교 가능' },
       { label:'재사용 의향',       val:`${reuseAvg} / 5`, desc:'리텐션 가능성 지표' },
-      { label:'추천자 비율',       val:`${promoRate}%`, desc:'NPS 9~10점 응답자' },
+      { label:'추천자 비율',       val:`${promoRate}%`, desc:'NPS 5점 응답자' },
     ];
     bizEl.innerHTML = '';
     bizItems.forEach(item => {
