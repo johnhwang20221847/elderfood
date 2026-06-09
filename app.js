@@ -116,6 +116,27 @@ function renderHome(){
     </div>`;
   }
 
+  html += `
+  <a href="/survey.html" style="text-decoration:none; display:block; margin-bottom:18px;">
+    <div style="
+      background: linear-gradient(135deg, #2E7D4F, #4CAF78);
+      border-radius: 14px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: white;
+      box-shadow: 0 4px 12px rgba(46,125,79,0.25);
+    ">
+      <div>
+        <div style="font-size:12px; opacity:0.85; margin-bottom:4px;">약 3분 · 익명 보장</div>
+        <div style="font-size:15px; font-weight:700;">📋 서비스 이용 경험 알려주기</div>
+      </div>
+      <div style="font-size:22px; font-weight:700;">→</div>
+    </div>
+  </a>
+`;
+  
   html += `<h2>빠른 손질 안내</h2>`;
   FOODS.forEach((f,i)=>{
     html += `<div class="card food-item" onclick="openFood(${i})">
