@@ -843,8 +843,8 @@
     const q1vals = data.map(r=>r.Q1).filter(Number.isFinite);
     const q9vals = data.map(r=>r.Q9).filter(Number.isFinite);
     const q10vals = data.map(r=>r.Q10).filter(v=>v!==undefined&&v!==null);
-    const promoters  = q10vals.filter(v=>v>=9).length;
-    const detractors = q10vals.filter(v=>v<=6).length;
+    const promoters  = q10vals.filter(v=>v>=5).length;
+    const detractors = q10vals.filter(v=>v<=3).length;
     const npsScore   = q10vals.length ? Math.round((promoters-detractors)/q10vals.length*100) : null;
 
     const satAvg  = avg(q1vals);
@@ -992,7 +992,7 @@
         '비추천자 그룹의 Q7(불편 사항) 응답을 분석해 이탈 원인을 파악하세요.'}` :
       'NPS 데이터가 없습니다.';
 
-    const npsDistCounts = Array.from({length:11},(_,i)=>[`${i}점`, q10vals.filter(v=>v===i).length]);
+    const npsDistCounts = Array.from({length:5},(_,i)=>[`${i+1}점`, q10vals.filter(v=>v===i).length]);
     makeBar('chart-nps-dist', npsDistCounts.filter(([,c])=>c>0), q10vals.length);
 
     scaleBarId('chart-q9', data.map(r=>r.Q9).filter(Number.isFinite), data.map(r=>r.Q9).filter(Number.isFinite).length);
