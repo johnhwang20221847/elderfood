@@ -615,25 +615,24 @@
 </div>
 
 <script type="module">
-  // ── Firebase 초기화 ──────────────────────────────────────────
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  // ── Firebase 초기화 (firebase.js와 동일한 버전 11.10.0 사용) ──
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
   import { getFirestore, collection, addDoc, serverTimestamp }
-    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
-  // ✅ 아래 firebaseConfig를 본인의 Firebase 프로젝트 설정값으로 교체하세요
-  //    Firebase 콘솔 → 프로젝트 설정 → 내 앱 → SDK 설정 및 구성
   const firebaseConfig = {
     apiKey:            "AIzaSyAxjdIZc5eDEgzo86SWLOrXCAwoQHyETa8",
     authDomain:        "elder-food-safety.firebaseapp.com",
     projectId:         "elder-food-safety",
     storageBucket:     "elder-food-safety.firebasestorage.app",
     messagingSenderId: "929697381233",
-    appId:             "1:929697381233:web:fbcb7a36a86fe166a454d0"
+    appId:             "1:929697381233:web:fbcb7a36a86fe166a454d0",
+    measurementId:     "G-1W7BBHZG4C"
   };
 
   const app = initializeApp(firebaseConfig);
   const db  = getFirestore(app);
-  // ─────────────────────────────────────────────────────────────
+  // ──────────────────────────────────────────────────────────────
 
   const TOTAL = 12;
   let current = 1;
