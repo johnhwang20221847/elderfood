@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>고령자 식품 안전 서비스 이용 설문</title>
+  <style>
+    :root {
+      --green-main: #2E7D4F;
+      --green-light: #E8F5EE;
+      --green-mid: #4CAF78;
+      --green-pale: #F2FAF5;
+      --text-dark: #1A2E23;
+      --text-mid: #4A6358;
+      --text-light: #8AADA0;
+      --white: #FFFFFF;
+      --border: #C8E3D4;
+      --warn: #E05A2B;
+      --shadow: 0 2px 16px rgba(46,125,79,0.10);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--green-pale);
+      font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+      color: var(--text-dark);
+      min-height: 100vh;
+    }
+
+    /* ── 상단 헤더 ── */
+    header {
+      background: var(--green-main);
+      color: var(--white);
+      padding: 20px 20px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    header .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+    header .logo span { font-size: 22px; }
+    header p {
+      font-size: 12px;
+      opacity: 0.8;
+      margin-top: 4px;
+    }
+
+    /* ── 진행바 ── */
+    #progress-wrap {
+      background: var(--white);
+      padding: 14px 20px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    #progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-mid);
+      margin-bottom: 8px;
+    }
+    #progress-bar-bg {
+      height: 6px;
+      background: var(--border);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    #progress-bar {
+      height: 100%;
+      background: var(--green-mid);
+      border-radius: 99px;
+      transition: width 0.4s ease;
+      width: 0%;
+    }
+
+    /* ── 메인 컨테이너 ── */
+    main {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 20px 16px 100px;
+    }
+
+    /* ── 인트로 카드 ── */
+    #intro-card {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 28px 24px;
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
+    #intro-card .icon { font-size: 48px; margin-bottom: 12px; }
+    #intro-card h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--green-main);
+      margin-bottom: 10px;
+    }
+    #intro-card p {
+      font-size: 14px;
+      color: var(--text-mid);
+      line-height: 1.7;
+      margin-bottom: 20px;
+    }
+    .tag-row {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+    .tag {
+      background: var(--green-light);
+      color: var(--green-main);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 99px;
+    }
+
+    /* ── 섹션 라벨 ── */
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: var(--text-light);
+      text-transform: uppercase;
+      margin: 28px 0 10px 4px;
+    }
+
+    /* ── 질문 카드 ── */
+    .q-card {
+      background: var(--white);
+      border-radius: 14px;
+      padding: 20px 18px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow);
+      display: none;
+      animation: fadeUp 0.3s ease;
+    }
+    .q-card.active { display: block; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .q-num {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--green-mid);
+      margin-bottom: 8px;
+      letter-spacing: 0.5px;
+    }
+    .q-text {
+      font-size: 15px;
+      font-weight: 600;
+      line-height: 1.5;
+      color: var(--text-dark);
+      margin-bottom: 16px;
+    }
+    .q-sub {
+      font-size: 12px;
+      color: var(--text-light);
+      margin-bottom: 14px;
+      margin-top: -10px;
+    }
+
+    /* 5점 척도 */
+    .scale-wrap {
+      display: flex;
+      gap: 8px;
+      justify-content: space-between;
+    }
+    .scale-btn {
+      flex: 1;
+      height: 48px;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      background: var(--white);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-mid);
+      cursor: pointer;
+      transition: all 0.18s;
+      position: relative;
+    }
+    .scale-btn:hover { border-color: var(--green-mid); color: var(--green-main); }
+    .scale-btn.selected {
+      background: var(--green-main);
+      border-color: var(--green-main);
+      color: var(--white);
+    }
+    .scale-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 6px;
+      font-size: 11px;
+      color: var(--text-light);
+    }
+
+    /* 단일 선택 */
+    .radio-list { display: flex; flex-direction: column; gap: 8px; }
+    .radio-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 14px;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.18s;
+      font-size: 14px;
+      color: var(--text-dark);
+    }
+    .radio-item:hover { border-color: var(--green-mid); background: var(--green-light); }
+    .radio-item.selected {
+      border-color: var(--green-main);
+      background: var(--green-light);
+      font-weight: 600;
+      color: var(--green-main);
+    }
+    .radio-dot {
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.18s;
+    }
+    .radio-item.selected .radio-dot {
+      background: var(--green-main);
+      border-color: var(--green-main);
+    }
+    .radio-item.selected .radio-dot::after {
+      content: '';
+      width: 6px; height: 6px;
+      background: white;
+      border-radius: 50%;
+    }
+
+    /* 복수 선택 */
+    .checkbox-list { display: flex; flex-direction: column; gap: 8px; }
+    .check-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 13px 14px;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.18s;
+      font-size: 14px;
+      color: var(--text-dark);
+    }
+    .check-item:hover { border-color: var(--green-mid); background: var(--green-light); }
+    .check-item.selected {
+      border-color: var(--green-main);
+      background: var(--green-light);
+      font-weight: 600;
+      color: var(--green-main);
+    }
+    .check-box {
+      width: 18px; height: 18px;
+      border-radius: 5px;
+      border: 2px solid var(--border);
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px;
+      transition: all 0.18s;
+    }
+    .check-item.selected .check-box {
+      background: var(--green-main);
+      border-color: var(--green-main);
+      color: white;
+    }
+
+    /* 텍스트 입력 */
+    textarea {
+      width: 100%;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 14px;
+      font-family: inherit;
+      color: var(--text-dark);
+      resize: none;
+      transition: border 0.18s;
+      outline: none;
+      line-height: 1.6;
+    }
+    textarea:focus { border-color: var(--green-main); }
+    textarea::placeholder { color: var(--text-light); }
+
+    /* ── 네비게이션 버튼 ── */
+    #nav-bar {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: var(--white);
+      border-top: 1px solid var(--border);
+      padding: 12px 20px 24px;
+      display: flex;
+      gap: 10px;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+    .btn {
+      flex: 1;
+      padding: 14px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+    .btn-prev {
+      background: var(--green-light);
+      color: var(--green-main);
+      flex: 0.5;
+    }
+    .btn-prev:hover { background: var(--border); }
+    .btn-next {
+      background: var(--green-main);
+      color: white;
+    }
+    .btn-next:hover { background: #236040; }
+    .btn-next:disabled {
+      background: var(--border);
+      color: var(--text-light);
+      cursor: not-allowed;
+    }
+
+    /* ── 완료 화면 ── */
+    #done-screen {
+      display: none;
+      text-align: center;
+      padding: 40px 0;
+    }
+    #done-screen .done-icon { font-size: 64px; margin-bottom: 16px; }
+    #done-screen h2 {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--green-main);
+      margin-bottom: 10px;
+    }
+    #done-screen p {
+      font-size: 14px;
+      color: var(--text-mid);
+      line-height: 1.7;
+      margin-bottom: 28px;
+    }
+
+    /* 결과 요약 */
+    #result-summary {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+      text-align: left;
+      margin-bottom: 16px;
+    }
+    #result-summary h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--green-main);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--green-light);
+      font-size: 13px;
+    }
+    .result-row:last-child { border-bottom: none; }
+    .result-row .label { color: var(--text-mid); flex: 1; }
+    .result-row .val {
+      font-weight: 700;
+      color: var(--green-main);
+    }
+
+    /* NPS 점수 배지 */
+    .nps-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      font-size: 18px;
+      font-weight: 800;
+      margin: 0 2px;
+    }
+    .nps-high { background: var(--green-main); color: white; }
+    .nps-mid  { background: #F5A623; color: white; }
+    .nps-low  { background: var(--warn); color: white; }
+
+    /* 복사 버튼 */
+    #copy-btn {
+      width: 100%;
+      background: var(--green-light);
+      color: var(--green-main);
+      border: 2px solid var(--green-main);
+      padding: 13px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+    #copy-btn:hover { background: var(--green-main); color: white; }
+
+    /* 응답 없음 경고 */
+    .warn-text {
+      font-size: 12px;
+      color: var(--warn);
+      margin-top: 8px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><span>🥬</span> 고령자 식품 안전</div>
+  <p>서비스 이용 경험 설문 · 약 3분 소요</p>
+</header>
+
+<div id="progress-wrap">
+  <div id="progress-label">
+    <span id="step-text">시작 전</span>
+    <span id="step-count"></span>
+  </div>
+  <div id="progress-bar-bg"><div id="progress-bar"></div></div>
+</div>
+
+<main>
+
+  <!-- 인트로 -->
+  <div id="intro-card">
+    <div class="icon">📋</div>
+    <h1>서비스 이용 경험을 알려주세요</h1>
+    <p>고령자 식품 안전 서비스를 더 좋게 만들기 위해<br>여러분의 솔직한 의견이 필요합니다.<br>응답은 익명으로 처리되며 서비스 개선에만 활용됩니다.</p>
+    <div class="tag-row">
+      <span class="tag">총 12문항</span>
+      <span class="tag">약 3분</span>
+      <span class="tag">익명 보장</span>
+    </div>
+    <button class="btn btn-next" id="start-btn" onclick="startSurvey()">설문 시작하기 →</button>
+  </div>
+
+  <!-- 질문 영역 -->
+  <div id="survey-wrap" style="display:none;">
+
+    <!-- Q1 -->
+    <div class="q-card" data-q="1" data-type="scale">
+      <div class="q-num">Q1 · 전반적 만족도</div>
+      <div class="q-text">서비스를 전반적으로 얼마나 만족하셨나요?</div>
+      <div class="scale-wrap" id="scale-1"></div>
+      <div class="scale-labels"><span>매우 불만족</span><span>매우 만족</span></div>
+      <p class="warn-text" id="warn-1">응답을 선택해 주세요.</p>
+    </div>
+
+    <!-- Q2 -->
+    <div class="q-card" data-q="2" data-type="scale">
+      <div class="q-num">Q2 · 저작 평가 유용성</div>
+      <div class="q-text">15문항 저작 능력 자가 평가가 얼마나 유용했나요?</div>
+      <div class="scale-wrap" id="scale-2"></div>
+      <div class="scale-labels"><span>전혀 유용하지 않음</span><span>매우 유용함</span></div>
+      <p class="warn-text" id="warn-2">응답을 선택해 주세요.</p>
+    </div>
+
+    <!-- Q3 -->
+    <div class="q-card" data-q="3" data-type="scale">
+      <div class="q-num">Q3 · 손질 안내 정확도</div>
+      <div class="q-text">식재료 손질 안내가 본인의 저작 상태에 맞게 제공되었나요?</div>
+      <div class="scale-wrap" id="scale-3"></div>
+      <div class="scale-labels"><span>전혀 맞지 않음</span><span>매우 잘 맞음</span></div>
+      <p class="warn-text" id="warn-3">응답을 선택해 주세요.</p>
+    </div>
+
+    <!-- Q4 -->
+    <div class="q-card" data-q="4" data-type="scale">
+      <div class="q-num">Q4 · 사용 편의성</div>
+      <div class="q-text">서비스가 사용하기 쉬웠나요? (화면 구성, 글자 크기, 버튼 등)</div>
+      <div class="scale-wrap" id="scale-4"></div>
+      <div class="scale-labels"><span>매우 어려웠음</span><span>매우 쉬웠음</span></div>
+      <p class="warn-text" id="warn-4">응답을 선택해 주세요.</p>
+    </div>
+
+    <!-- Q5 -->
+    <div class="q-card" data-q="5" data-type="radio">
+      <div class="q-num">Q5 · 주요 사용 기능</div>
+      <div class="q-text">어떤 기능을 가장 많이 사용하셨나요?</div>
+      <div class="radio-list" id="radio-5">
+        <div class="radio-item" onclick="selectRadio(5, this)"><div class="radio-dot"></div>저작 능력 평가 (15문항)</div>
+        <div class="radio-item" onclick="selectRadio(5, this)"><div class="radio-dot"></div>식재료 손질 안내</div>
+        <div class="radio-item" onclick="selectRadio(5, this)"><div class="radio-dot"></div>재료 촬영 기능</div>
+        <div class="radio-item" onclick="selectRadio(5, this)"><div class="radio-dot"></div>홈 화면 / 공지 확인</div>
+        <div class="radio-item" onclick="selectRadio(5, this)"><div class="radio-dot"></div>기능을 잘 모르겠음</div>
+      </div>
+      <p class="warn-text" id="warn-5">응답을 선택해 주세요.</p>
+    </div>
+
+    <!-- Q6 -->
+    <div class="q-card" data-q="6" data-type="radio">
+      <div class="q-num">Q6 · 주 사용자 유형</div>
+      <div class="q-text">이 서비스를 주로 누가 사용하고 있나요?</div>
+      <div class="radio-list" id="radio-6">
+        <div class="radio-item" onclick="selectRadio(6, this)"><div class="radio-dot"></div>본인 (고령자 본인이 직접)</div>
+        <div class="radio-item" onclick="selectRadio(6, this)"><div class="radio-dot"></div>가족이 대신 사용</div>
+        <div class="radio-item" onclick="selectRadio(6, this)"><div class="radio-dot"></div>요양·복지 종사자</div>
+        <div class="radio-item" onclick="selectRadio(6, this)"><div class="radio-dot"></div>식품·의료 관련 전문가</div>
+        <div class="radio-item" onclick="selectRadio(6, this)"><div class="radio-dot"></div>기타</div>
+      </div>
+      <p class="warn-text" id="warn-6">응답을 선택해 주세요.</p>
+    </div>
+
+    <!-- Q7 -->
+    <div class="q-card" data-q="7" data-type="checkbox">
+      <div class="q-num">Q7 · 개선이 필요한 부분 (복수 선택 가능)</div>
+      <div class="q-text">어떤 부분이 아쉬웠나요?</div>
+      <div class="checkbox-list" id="check-7">
+        <div class="check-item" onclick="toggleCheck(7, this)"><div class="check-box">✓</div>글자 크기 / 가독성</div>
+        <div class="check-item" onclick="toggleCheck(7, this)"><div class="check-box">✓</div>손질 안내 내용의 정확도</div>
+        <div class="check-item" onclick="toggleCheck(7, this)"><div class="check-box">✓</div>저작 평가 문항의 이해도</div>
+        <div class="check-item" onclick="toggleCheck(7, this)"><div class="check-box">✓</div>페이지 로딩 속도</div>
+        <div class="check-item" onclick="toggleCheck(7, this)"><div class="check-box">✓</div>음성 안내 / 접근성 기능 부족</div>
+        <div class="check-item" onclick="toggleCheck(7, this)"><div class="check-box">✓</div>아쉬운 점 없음</div>
+      </div>
+      <p class="warn-text" id="warn-7">하나 이상 선택해 주세요.</p>
+    </div>
+
+    <!-- Q8 -->
+    <div class="q-card" data-q="8" data-type="checkbox">
+      <div class="q-num">Q8 · 추가되길 원하는 기능 (복수 선택 가능)</div>
+      <div class="q-text">어떤 기능이 추가되면 더 좋을 것 같나요?</div>
+      <div class="checkbox-list" id="check-8">
+        <div class="check-item" onclick="toggleCheck(8, this)"><div class="check-box">✓</div>음성 읽기 기능 (TTS)</div>
+        <div class="check-item" onclick="toggleCheck(8, this)"><div class="check-box">✓</div>영양 정보 / 칼로리 표시</div>
+        <div class="check-item" onclick="toggleCheck(8, this)"><div class="check-box">✓</div>맞춤 레시피 추천</div>
+        <div class="check-item" onclick="toggleCheck(8, this)"><div class="check-box">✓</div>보호자와 결과 공유 기능</div>
+        <div class="check-item" onclick="toggleCheck(8, this)"><div class="check-box">✓</div>병원·영양사 연계 기능</div>
+        <div class="check-item" onclick="toggleCheck(8, this)"><div class="check-box">✓</div>변화 추이 기록 / 히스토리</div>
+      </div>
+      <p class="warn-text" id="warn-8">하나 이상 선택해 주세요.</p>
+    </div>
+
+    <!-- Q9 -->
+    <div class="q-card" data-q="9" data-type="scale">
+      <div class="q-num">Q9 · 재사용 의향</div>
+      <div class="q-text">앞으로도 이 서비스를 계속 이용할 의향이 있나요?</div>
+      <div class="scale-wrap" id="scale-9"></div>
+      <div class="scale-labels"><span>전혀 없음</span><span>매우 그렇다</span></div>
+      <p class="warn-text" id="warn-9">응답을 선택해 주세요.</p>
+    </div>
+
+    <!-- Q10 NPS -->
+    <div class="q-card" data-q="10" data-type="nps">
+      <div class="q-num">Q10 · 추천 의향 (NPS)</div>
+      <div class="q-text">주변 지인에게 이 서비스를 추천할 의향은 얼마나 되나요?</div>
+      <div class="q-sub">0 = 전혀 추천하지 않겠다 · 10 = 적극 추천하겠다</div>
+      <div id="nps-wrap" style="display:flex; gap:6px; flex-wrap:wrap; justify-content:center;"></div>
+      <p class="warn-text" id="warn-10">점수를 선택해 주세요.</p>
+    </div>
+
+    <!-- Q11 -->
+    <div class="q-card" data-q="11" data-type="radio">
+      <div class="q-num">Q11 · 서비스 알게 된 경로</div>
+      <div class="q-text">이 서비스를 어떻게 알게 되셨나요?</div>
+      <div class="radio-list" id="radio-11">
+        <div class="radio-item" onclick="selectRadio(11, this)"><div class="radio-dot"></div>가족·지인 추천</div>
+        <div class="radio-item" onclick="selectRadio(11, this)"><div class="radio-dot"></div>인터넷 검색</div>
+        <div class="radio-item" onclick="selectRadio(11, this)"><div class="radio-dot"></div>SNS (인스타, 유튜브 등)</div>
+        <div class="radio-item" onclick="selectRadio(11, this)"><div class="radio-dot"></div>복지관·의료기관 안내</div>
+        <div class="radio-item" onclick="selectRadio(11, this)"><div class="radio-dot"></div>기타</div>
+      </div>
+      <p class="warn-text" id="warn-11">응답을 선택해 주세요.</p>
+    </div>
+
+    <!-- Q12 주관식 -->
+    <div class="q-card" data-q="12" data-type="text">
+      <div class="q-num">Q12 · 자유 의견 (선택 사항)</div>
+      <div class="q-text">서비스에 대해 자유롭게 의견을 남겨주세요.</div>
+      <textarea id="text-12" rows="5" placeholder="불편했던 점, 좋았던 점, 개선 아이디어 등 무엇이든 환영합니다 😊"></textarea>
+    </div>
+
+  </div>
+
+  <!-- 완료 화면 -->
+  <div id="done-screen">
+    <div class="done-icon">🎉</div>
+    <h2>설문이 완료되었습니다!</h2>
+    <p>소중한 의견 감사합니다.<br>응답 내용은 서비스 개선에 적극 반영하겠습니다.</p>
+    <div id="result-summary">
+      <h3>📊 내 응답 요약</h3>
+      <div id="summary-rows"></div>
+    </div>
+    <button id="copy-btn" onclick="copyResult()">📋 내 응답 텍스트로 복사</button>
+  </div>
+
+</main>
+
+<div id="nav-bar" style="display:none;">
+  <button class="btn btn-prev" id="prev-btn" onclick="prevQ()">← 이전</button>
+  <button class="btn btn-next" id="next-btn" onclick="nextQ()">다음 →</button>
+</div>
+
+<script>
+  const TOTAL = 12;
+  let current = 1;
+  const answers = {};
+
+  /* ── 5점 척도 생성 ── */
+  [1,2,3,4,9].forEach(q => {
+    const wrap = document.getElementById('scale-' + q);
+    if (!wrap) return;
+    for (let i = 1; i <= 5; i++) {
+      const btn = document.createElement('button');
+      btn.className = 'scale-btn';
+      btn.textContent = i;
+      btn.onclick = () => selectScale(q, i, btn);
+      wrap.appendChild(btn);
+    }
+  });
+
+  /* ── NPS 생성 ── */
+  const npsWrap = document.getElementById('nps-wrap');
+  for (let i = 0; i <= 10; i++) {
+    const btn = document.createElement('button');
+    btn.className = 'scale-btn';
+    btn.style.cssText = 'flex:none; width:44px; height:44px; font-size:13px;';
+    btn.textContent = i;
+    btn.onclick = () => { selectNPS(i, btn); };
+    npsWrap.appendChild(btn);
+  }
+
+  function selectScale(q, val, btn) {
+    document.querySelectorAll('#scale-' + q + ' .scale-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    answers['Q' + q] = val;
+    hideWarn(q);
+  }
+
+  function selectNPS(val, btn) {
+    document.querySelectorAll('#nps-wrap .scale-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    answers['Q10'] = val;
+    hideWarn(10);
+  }
+
+  function selectRadio(q, el) {
+    document.querySelectorAll('#radio-' + q + ' .radio-item').forEach(i => i.classList.remove('selected'));
+    el.classList.add('selected');
+    answers['Q' + q] = el.textContent.trim();
+    hideWarn(q);
+  }
+
+  function toggleCheck(q, el) {
+    el.classList.toggle('selected');
+    const checked = [...document.querySelectorAll('#check-' + q + ' .check-item.selected')]
+      .map(i => i.textContent.trim());
+    answers['Q' + q] = checked;
+    if (checked.length > 0) hideWarn(q);
+  }
+
+  function hideWarn(q) {
+    const w = document.getElementById('warn-' + q);
+    if (w) w.style.display = 'none';
+  }
+
+  function isAnswered(q) {
+    const card = document.querySelector('.q-card[data-q="' + q + '"]');
+    const type = card.dataset.type;
+    if (type === 'text') return true; // optional
+    if (type === 'checkbox') return answers['Q' + q] && answers['Q' + q].length > 0;
+    return answers['Q' + q] !== undefined;
+  }
+
+  function startSurvey() {
+    document.getElementById('intro-card').style.display = 'none';
+    document.getElementById('survey-wrap').style.display = 'block';
+    document.getElementById('nav-bar').style.display = 'flex';
+    showQ(1);
+  }
+
+  function showQ(q) {
+    document.querySelectorAll('.q-card').forEach(c => c.classList.remove('active'));
+    const card = document.querySelector('.q-card[data-q="' + q + '"]');
+    if (card) card.classList.add('active');
+    updateProgress(q);
+    updateNav(q);
+  }
+
+  function updateProgress(q) {
+    const pct = Math.round((q / TOTAL) * 100);
+    document.getElementById('progress-bar').style.width = pct + '%';
+    document.getElementById('step-text').textContent = 'Q' + q + ' / ' + TOTAL;
+    document.getElementById('step-count').textContent = pct + '%';
+  }
+
+  function updateNav(q) {
+    document.getElementById('prev-btn').style.display = q === 1 ? 'none' : '';
+    const nextBtn = document.getElementById('next-btn');
+    nextBtn.textContent = q === TOTAL ? '제출하기 ✓' : '다음 →';
+  }
+
+  function nextQ() {
+    if (!isAnswered(current)) {
+      const w = document.getElementById('warn-' + current);
+      if (w) w.style.display = 'block';
+      return;
+    }
+    if (current < TOTAL) {
+      current++;
+      showQ(current);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      submitSurvey();
+    }
+  }
+
+  function prevQ() {
+    if (current > 1) { current--; showQ(current); }
+  }
+
+  function submitSurvey() {
+    // 텍스트 저장
+    answers['Q12'] = document.getElementById('text-12').value.trim() || '(없음)';
+
+    // UI 전환
+    document.getElementById('survey-wrap').style.display = 'none';
+    document.getElementById('nav-bar').style.display = 'none';
+    document.getElementById('done-screen').style.display = 'block';
+    document.getElementById('progress-bar').style.width = '100%';
+    document.getElementById('step-text').textContent = '완료';
+    document.getElementById('step-count').textContent = '100%';
+
+    renderSummary();
+  }
+
+  const labels = {
+    Q1: '전반적 만족도', Q2: '저작 평가 유용성', Q3: '손질 안내 정확도',
+    Q4: '사용 편의성', Q5: '주요 사용 기능', Q6: '주 사용자 유형',
+    Q7: '개선 필요 부분', Q8: '추가 기능 요청', Q9: '재사용 의향',
+    Q10: '추천 점수(NPS)', Q11: '알게 된 경로', Q12: '자유 의견'
+  };
+
+  function renderSummary() {
+    const wrap = document.getElementById('summary-rows');
+    wrap.innerHTML = '';
+    Object.entries(labels).forEach(([key, lbl]) => {
+      const val = answers[key];
+      if (!val && val !== 0) return;
+      const row = document.createElement('div');
+      row.className = 'result-row';
+      let display = Array.isArray(val) ? val.join(', ') : String(val);
+
+      // NPS 컬러
+      if (key === 'Q10') {
+        const cls = val >= 9 ? 'nps-high' : val >= 7 ? 'nps-mid' : 'nps-low';
+        display = `<span class="nps-badge ${cls}">${val}</span>`;
+        row.innerHTML = `<span class="label">${lbl}</span><span class="val">${display}</span>`;
+      } else {
+        row.innerHTML = `<span class="label">${lbl}</span><span class="val">${display}</span>`;
+      }
+      wrap.appendChild(row);
+    });
+  }
+
+  function copyResult() {
+    const lines = ['[고령자 식품 안전 서비스 설문 응답]', ''];
+    Object.entries(labels).forEach(([key, lbl]) => {
+      const val = answers[key];
+      if (val === undefined) return;
+      const display = Array.isArray(val) ? val.join(' / ') : String(val);
+      lines.push(`${lbl}: ${display}`);
+    });
+    lines.push('', `응답 일시: ${new Date().toLocaleString('ko-KR')}`);
+    navigator.clipboard.writeText(lines.join('\n')).then(() => {
+      const btn = document.getElementById('copy-btn');
+      btn.textContent = '✅ 복사 완료!';
+      setTimeout(() => btn.textContent = '📋 내 응답 텍스트로 복사', 2000);
+    });
+  }
+</script>
+</body>
+</html>
