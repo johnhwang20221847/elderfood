@@ -614,7 +614,27 @@
   <button class="btn btn-next" id="next-btn" onclick="nextQ()">다음 →</button>
 </div>
 
-<script>
+<script type="module">
+  // ── Firebase 초기화 ──────────────────────────────────────────
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, serverTimestamp }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  // ✅ 아래 firebaseConfig를 본인의 Firebase 프로젝트 설정값으로 교체하세요
+  //    Firebase 콘솔 → 프로젝트 설정 → 내 앱 → SDK 설정 및 구성
+  const firebaseConfig = {
+    apiKey:            "YOUR_API_KEY",
+    authDomain:        "YOUR_PROJECT_ID.firebaseapp.com",
+    projectId:         "YOUR_PROJECT_ID",
+    storageBucket:     "YOUR_PROJECT_ID.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId:             "YOUR_APP_ID"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+  // ─────────────────────────────────────────────────────────────
+
   const TOTAL = 12;
   let current = 1;
   const answers = {};
@@ -732,11 +752,30 @@
     if (current > 1) { current--; showQ(current); }
   }
 
-  function submitSurvey() {
-    // 텍스트 저장
+  async function submitSurvey() {
+    // Q12 텍스트 저장
     answers['Q12'] = document.getElementById('text-12').value.trim() || '(없음)';
 
-    // UI 전환
+    // ── 제출 버튼 로딩 상태 ──
+    const nextBtn = document.getElementById('next-btn');
+    nextBtn.disabled = true;
+    nextBtn.textContent = '저장 중...';
+
+    // ── Firestore 저장 ──
+    try {
+      await addDoc(collection(db, "survey_responses"), {
+        ...answers,
+        timestamp:  serverTimestamp(),
+        userAgent:  navigator.userAgent,
+        referrer:   document.referrer || '직접 접속'
+      });
+      console.log('✅ Firestore 저장 완료');
+    } catch (err) {
+      console.error('❌ Firestore 저장 실패:', err);
+      // 저장 실패해도 완료 화면은 보여줌 (UX 보호)
+    }
+
+    // ── UI 전환 ──
     document.getElementById('survey-wrap').style.display = 'none';
     document.getElementById('nav-bar').style.display = 'none';
     document.getElementById('done-screen').style.display = 'block';
@@ -791,6 +830,13 @@
       setTimeout(() => btn.textContent = '📋 내 응답 텍스트로 복사', 2000);
     });
   }
+  // ── onclick 핸들러 전역 노출 (type="module" 필수 처리) ──
+  window.startSurvey  = startSurvey;
+  window.nextQ        = nextQ;
+  window.prevQ        = prevQ;
+  window.selectRadio  = selectRadio;
+  window.toggleCheck  = toggleCheck;
+  window.copyResult   = copyResult;
 </script>
 </body>
 </html>
